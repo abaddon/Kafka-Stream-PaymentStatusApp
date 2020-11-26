@@ -7,10 +7,7 @@ import org.apache.kafka.common.serialization.StringSerializer;
 
 import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.util.Collections;
-import java.util.GregorianCalendar;
-import java.util.List;
-import java.util.Properties;
+import java.util.*;
 import java.util.concurrent.ThreadLocalRandom;
 
 public class RandomMsgProducer {
@@ -34,35 +31,42 @@ public class RandomMsgProducer {
         //init Kafka producer
         Producer<String,String> producer = new KafkaProducer<String, String>(properties);
 
-        generateRandomEvents(100).forEach(record ->{
+        Runtime.getRuntime().addShutdownHook(new Thread(producer::close));
 
-            producer.send(record, new Callback() {
-                @Override
-                public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-                    System.out.println("offset: "+recordMetadata.offset());
-                    if(e != null){
-                        System.out.println("ERROR: "+e.getMessage());
+        int iterationNumber=0;
+        while(true){
+            generateRandomEvents(1000000,iterationNumber).forEach(record ->{
+
+                producer.send(record, new Callback() {
+                    @Override
+                    public void onCompletion(RecordMetadata recordMetadata, Exception e) {
+                        System.out.println("offset: "+recordMetadata.offset());
+                        if(e != null){
+                            System.out.println("ERROR: "+e.getMessage());
+                        }
                     }
-                }
+                });
+
             });
-            //Thread.sleep(100);
-        });
+            iterationNumber++;
+        }
+
 
     }
 
-    private static List<ProducerRecord<String,String>> generateRandomEvents(int numPayments){
-        List<ProducerRecord<String,String>> list = Collections.emptyList();
+    private static List<ProducerRecord<String,String>> generateRandomEvents(int numPayments, int iterationNumber){
+        ArrayList<ProducerRecord<String,String>> list = new ArrayList<ProducerRecord<String,String>>();
         int i =0;
         while(i < numPayments){
             i++;
-            list.addAll(createPaymentEvents("pId-"+numPayments));
+            list.addAll(createPaymentEvents("pId-"+iterationNumber+"-"+i));
         }
         Collections.shuffle(list);
         return list;
     }
 
     private static List<ProducerRecord<String,String>> createPaymentEvents(String paymentId){
-        List<ProducerRecord<String,String>> list = Collections.emptyList();
+        ArrayList<ProducerRecord<String,String>> list = new ArrayList<ProducerRecord<String,String>>();
 
         list.add(createPaymentEvent(paymentId,"authorised"));
         list.add(createPaymentEvent(paymentId,"settled"));
