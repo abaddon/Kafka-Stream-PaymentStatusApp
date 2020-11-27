@@ -3,9 +3,14 @@
 
 ## Setup
 Payment topic creation
-```./bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic payment --create --partitions 3 --replication-factor 1```
+```
+./bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic payment --create --partitions 3 --replication-factor 1
+```
+
 Payment Status topic creation
-```./bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic payment_status --create --partitions 3 --replication-factor 1 \
+
+```
+./bin/kafka-topics.sh --zookeeper 127.0.0.1:2181 --topic payment_status --create --partitions 3 --replication-factor 1 \
 --config cleanup.policy=compact \
 --config delete.retention.ms=300000
 ```
