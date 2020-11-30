@@ -49,7 +49,6 @@ public class PaymentStatusApp {
         Gson gson = new GsonBuilder().serializeNulls().create();
 
         payment
-                //.filter((key, value) -> List.of("authorised", "settled", "refund", "refund_canceled").contains(value))
                 .groupByKey()
                 .aggregate(
                         () -> gson.toJson(new LastPaymentStatus()),       //stato iniziale fittizzio

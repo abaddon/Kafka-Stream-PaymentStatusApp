@@ -18,13 +18,15 @@ public class RandomMsgProducer {
     public static void main(String[] args) {
         Properties properties = new Properties();
         //bootstrap server
-        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"127.0.0.1:9092");
+        properties.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG,"localhost:9092");
         properties.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
         properties.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, StringSerializer.class.getName());
-        // producer acks
+
+        //producer acks
         properties.put(ProducerConfig.ACKS_CONFIG,"all");
         properties.put(ProducerConfig.RETRIES_CONFIG,"3"); //retry tentatives
         properties.put(ProducerConfig.LINGER_MS_CONFIG,"1");
+
         //leverage idempotent producer
         properties.put(ProducerConfig.ENABLE_IDEMPOTENCE_CONFIG,"true");
 
@@ -36,22 +38,20 @@ public class RandomMsgProducer {
         int iterationNumber=0;
         while(true){
             generateRandomEvents(1000000,iterationNumber).forEach(record ->{
-
                 producer.send(record, new Callback() {
                     @Override
                     public void onCompletion(RecordMetadata recordMetadata, Exception e) {
-                        System.out.println("offset: "+recordMetadata.offset());
+                        if(recordMetadata != null){
+                            System.out.println("offset: "+recordMetadata.offset());
+                        }
                         if(e != null){
                             System.out.println("ERROR: "+e.getMessage());
                         }
                     }
                 });
-
             });
             iterationNumber++;
         }
-
-
     }
 
     private static List<ProducerRecord<String,String>> generateRandomEvents(int numPayments, int iterationNumber){
